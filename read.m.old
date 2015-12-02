@@ -1,0 +1,47 @@
+clc;    
+clear all;
+
+PATH = 'E:\FinalUMIPECGAnalysisCode-2013\Test';
+NumOfRecord = '100';
+HeaName = [ NumOfRecord '.hea' ];
+AtrName = [ NumOfRecord '.atr' ];
+DatName = [ NumOfRecord '.dat' ];
+
+
+%% Read Data Header Files                           
+%------ LOAD HEADER DATA --------------------------------------------------
+%------ 读入头文件数据 -----------------------------------------------------
+%
+% 示例：用记事本打开的100.hea 文件的数据
+%
+%        100 2 360 650000
+%        100.dat 100 100 11 1024 995 -22131 0 MLII
+%        100.dat 100 100 11 1024 1011 20052 0 V5
+%        # 69 M 1085 1629 x1
+%        # Aldomet, Inderal
+%
+%-------------------------------------------------------------------------
+
+fprintf( '读取头文件：%s.\n', HeaName ); % 在Matlab命令行窗口提示当前工作状态
+HeaFileDir = fullfile( PATH, HeaName );    % 通过函数 fullfile 获得头文件的完整路径
+FileIn = fopen( HeaFileDir, 'r' );                % 打开头文件，其标识符为 fid1 ，属性为'r'--“只读”
+RecordLine = fgetl( FileIn );
+Text = sscanf( RecordLine, '%*s %d %d %d', [3, 1] );
+LeadCnt = Text(1);
+Freq = Text(2);
+NumOfSample = Text(3);
+for i = 1:LeadCnt
+    StandardLine = fgetl( FileIn );
+    Text = sscanf( StandardLine, '%*s %d %d %d %d', [4, 1] );
+    DatFormat(i) = Text(1);     %数据存储格式
+    SigGain(i) = Text(2);        %信号增益
+    Resolution(i) = Text(3);     %分辨率
+    ZeroADC(i) = Text(4);        %ADC零值
+end;
+fclose( FileIn );
+
+recordName = 'E:\FinalUMIPECGAnalysisCode-2013\Test\100';
+[ Signal, Fs, Siginfo, Atrinfo ]=rddat(recordName);
+fprintf( 'over\n');
+
+
