@@ -1,0 +1,26 @@
+准确率计算程序
+实现功能：实现对于QRS检测准确率的检测
+
+检验指标：TP、TN、FP、FN
+
+TP：真——》检测为真
+FP：假——》检测为真
+TN：假——》检测为假
+FN：真——》检测为假
+
+1.QRS检测，确定QRS索引位置 RpeakIndex
+2.读取ATR信息，取得其中属于搏动的心跳信息，目测是1-13（type类型），获取心跳索引
+3.获取正确心跳的心跳序列
+4.归并对比：ps:由Atr驱动，若在范围内则比较
+	若 abs( RpeakIndex(head) - AtrIndex(head) ) < 0.1 * Fs, 则认为检测正确,TP + 1, RpeakIndex(head)++, AtrIndex(head)++
+	否则
+		若 RpeakIndex( head ) < AtrIndex( head ) ,则FP
+		若 RpeakIndex( head ) > AtrIndex( head ) ,则FN
+	ps：注意添加一个伪迹的判
+
+SVM支持向量机算法
+特征提取：
+	根据注释信息，即ATR，找到每一个需要的Rpeak大致位置，然后确定R峰位置，再之后直接确定PTR几个特征点位置
+	根据RPT的特征点位置，计算特征信息
+	训练SVM，验证SVM，使用SVM
+
