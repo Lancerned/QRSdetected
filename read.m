@@ -21,17 +21,16 @@ Signal = BPFilter( Signal );
 %[SampleCnt LeadCnt] = size( Signal );
 % Rpeak = ModifiedII( Signal, Fs );
 % QRSdetected( Signal, Fs );
-Rpeak = KmeansDetected( Signal, Fs );
+Feature = KmeansDetected( Signal, Fs );
 fprintf( 'QRSdetected finished.\n' ); 
 % TWavindex = TWavdetection( Rpeak, Signal, Fs );
 % fprintf( 'TWavdetection finished.\n' );
 % PWavindex = PWavdetection( Rpeak, Signal, Fs );
 % fprintf( 'PWavdetection finished.\n' );
 %% PLOT R-PEAK 
-plot( Signal( 1:600000,1 ) );
+plot( Signal( :,1 ) );
 hold on
-r = find( Rpeak(:,1) < 600000 );
-r = Rpeak(r,1);
+r = Feature(1).Rpeak;
 for i = 1:length(r)
     plot( r(i),Signal(r(i),1), 'ro' );
     hold on;
@@ -62,11 +61,12 @@ end
 %     fprintf( 'Now calculate the correct rate for Method: %s\n', str );
 %     % RpeakDetectedMethod = @ModifiedII;
 %     % RpeakDetectedMethod = @QRSdetected;
-%     % RpeakDetectedMethod = { @ModifiedII; @QRSdetected };
+%     % RpeakDetec tedMethod = { @ModifiedII; @QRSdetected };
 %     RpeakDetectedMethod = str2func( str );
 %     CorrectRate( RpeakDetectedMethod, Signal, Atrinfo, Fs );
 %     MethodIter = MethodIter + 1;
 % end
 % 
+
 
 
