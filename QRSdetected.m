@@ -1,7 +1,15 @@
 function [ RpeakIndex ] = QRSdetected( ECGs, Fs )
-%UNTITLED3 Summary of this function goes here
-%   Detailed explanation goes here
-[ Samplecnt Recordcnt ] = size( ECGs );
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Title: QRS Detected Algorithm From The Python
+%Programmer:    Pan Jiabin
+%Purpose:
+%Primary User:
+%Original Written:  11/15/2015
+%Last Changed:  11/30/2015
+%Changed By:    Pan Jiabin
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+[ Samplecnt, Recordcnt ] = size( ECGs );
 idxWindow = ceil( Fs*0.1);
 tECGs = FPDiff( ECGs );
 tECGs = tECGs .* tECGs;

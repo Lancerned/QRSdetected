@@ -1,4 +1,14 @@
 function [ Samples, Frq, Siginfo, AtrInfo ] = rddat( RecordName )
+%Title: Read the ECG data from MIT-BIH with the .dat format
+%Programmer: Pan Jiabin
+%Purpose:
+%Primary User:
+%Original Written: 11/15/2015
+%Last Changed: 11/30/2015
+%Changed by: Pan
+%Struct:    Siginfo = { Format, Baseline, Gain, Description };
+%           Atrinfo = { Type, Time };
+
 
 defgain = 200;
 fid = fopen( [ RecordName '.hea' ], 'rt' );
