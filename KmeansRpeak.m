@@ -1,19 +1,20 @@
-%Title:                 K-means Detected method 
-%Author:                Pan	Jiabin
-%Originally Written:	2015/12/02
-%Last changed:          2015/12/04
-%Changed By:            Pan Jiabin
-
+function [ Rpeak ] = KmeansDetected( Signal, Fs )
 % function [ Rpeak ] = KmeansDetected( Signal, Fs )
-function [ Feature ] = KmeansDetected( Signal, Fs )
-[SampleCnt, LeadCnt] = size( Signal );
+
+% Title:                 K-means Detected method 
+% Author:                Pan	Jiabin
+% Originally Written:	2015/12/02
+% Last changed:          2015/12/04
+% Changed By:            Pan Jiabin
+
+[~, LeadCnt] = size( Signal );
 
 
 % slope = Signal(2:end,:) - Signal( 1:end-1,: );
 % size( slope);
-
+Rpeak = [];
 for LeadIter = 1:LeadCnt
-    Rpeak = [];
+
     slope = Signal( 2:end,LeadIter ) - Signal( 1:end-1,LeadIter );
 	kmeans_input = abs( slope );
     clear IDX;
@@ -52,11 +53,13 @@ for LeadIter = 1:LeadCnt
             TempLeft = QRSBorder( Iter ).left;
             TempRight = QRSBorder( Iter ).right;
             [~,RelativePos] = max( Signal( TempLeft:TempRight ,LeadIter ) );
-            Rpeak( Iter ) = TempLeft + RelativePos - 1;
+            Rpeak( Iter,LeadIter ) = TempLeft + RelativePos - 1;
         end
         clear QRSBorder;
         
-        
+%         Feature( LeadIter ) = getfeature( Signal( :,LeadIter ), Rpeak );
+    end
+end
 
         
     

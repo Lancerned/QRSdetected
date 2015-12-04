@@ -17,7 +17,7 @@ recordName = [ data_dir '201' ];
 fprintf( 'Rddat finished.\n');
 
 Signal = BPFilter( Signal );
-
+Signal = WaveTransform( Signal );
 %[SampleCnt LeadCnt] = size( Signal );
 % Rpeak = ModifiedII( Signal, Fs );
 % QRSdetected( Signal, Fs );

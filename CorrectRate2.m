@@ -12,7 +12,8 @@
 clear all;
 close all;
 clc;
-Methods = { 'QRSdetected'; 'ModifiedII' };
+% Methods = { 'QRSdetected'; 'ModifiedII':'KmeansRpeak' };
+Methods = { 'KmeansRpeak' };
 Records = { '100'; '101'; '102'; '103'; '104'; '105'; '106'; '107'; '108'; '109'; '111'; ...
             '111'; '112'; '113'; '114'; '115'; '116'; '117'; '118'; '119'; '121'; '122'; '123';...
             '200'; '201'; '202'; '203'; '205'; '207'; '208'; '209'; '210'; ...
@@ -52,7 +53,10 @@ for RecordIter = 1:RecordCnt
             str = cell2mat( Methods( MethodIter ) );
             fprintf( 'With the Methods: %s\n', str );
             RpeakDetectedFunc = str2func( str );
-            DetectedRpeak = RpeakDetectedFunc( Signal( :,LeadIter ), Fs );
+            Filtered = BPFilter( Signal( :,LeadIter ) );
+            Filtered = WaveTransform( Filtered );
+%             DetectedRpeak = RpeakDetectedFunc( Signal( :,LeadIter ), Fs );
+            DetectedRpeak = RpeakDetectedFunc( Filtered, Fs );
             AtrRpeak = Atrinfo.Time( find( Atrinfo.Type > 0 & Atrinfo.Type < 14 ) );
 		
             DetectedRpeakCnt = length( DetectedRpeak );
