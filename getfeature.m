@@ -60,7 +60,7 @@ for iter = 1:length( Rpeak(:) )
 
     %Find the Real Q point
     iter_slope = TempQDeep( iter );
-    edge = 0;
+    edge = 1;
     if( iter ~= 1 )
         edge = Rpeak( iter - 1 );
     end
@@ -114,6 +114,7 @@ for iter = 1:size( TP_border, 1 )
     while( iter_slope > edge_left )
         if( slope( iter_slope ) < 0 && slope( iter_slope - 1 ) > 0 )
             if( sig(iter_slope-1) > sig( max_pos1 ) )
+                max_pos2 = max_pos1;
                 max_pos1 = iter_slope - 1;
             elseif( sig( iter_slope - 1 ) > sig( max_pos2 ) )
                 max_pos2 = iter_slope - 1;

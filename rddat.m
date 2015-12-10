@@ -36,7 +36,7 @@ for m = 1:LeadCnt
 	str = fgetl( fid );
 	info = textscan( str, '%s %u %f %u %f %f %d %d %s' );
 	%	201.dat		212		200		11			1024		972			-519		0	MLII
-	%	文件�?s	编码%u	增益%f	分辨�?u	ADC基线 	第一个采样�?
+	%	filename	format	ADC     ADCppi      ADCzero 	first_value
 	Siginfo(m).Format = info{ 2 };
 	Siginfo(m).Gain = info{ 3 };
 	Siginfo(m).Baseline = info{ 5 };
@@ -62,9 +62,35 @@ if( Siginfo(m).Format == 212 )
     Sample2 = ( Sample2 - Siginfo(2).Baseline ) ./ Siginfo(2).Gain;
 
     Samples = [ Sample1' Sample2' ];
+end
 
+% Read the 16 Format data.
+if( Siginfo(m).Format == 16 )
+    fid = fopen( [ RecordName '.dat' ], 'rb' );
+    if( fid == -1 )
+        error( [ 'Could not open file: ' RecordName '.dat' ] );
+    end
 
+    data = fread(  fid, [ LeadCnt, inf ], 'int16' );
+    fclose( fid );
+    Samples = zeros( SampleCnt,LeadCnt );
+    for iter = 1:LeadCnt
+        temp_sig = data( iter,: );
+        temp_sig = ( temp_sig - Siginfo(iter).Baseline ) ./ Siginfo(1).Gain;
+        temp_sig = temp_sig';
+        Samples( :,iter ) = temp_sig;
+    end
+end
+   
 
+fid = fopen( [ RecordName '.atr' ], 'rb' );
+if( fid == -1 )
+    error( [ 'Could not open file: ' RecordName '.dat' ] );
+end
+data = fread(  fid, inf, 'int8' );
+fclose( fid );
+
+% if( data(1) ~= 0 )
     fid = fopen( [ RecordName '.atr' ], 'rb' );
     if( fid == -1 )
         error( [ 'Could not open file: ' RecordName '.dat' ] );
@@ -100,11 +126,12 @@ if( Siginfo(m).Format == 212 )
         end
         i = i + 1;
     end
-else
-    disp( 'Can not read this format data.' );
     fclose( fid );
-end
-    
+% else
+%     error( 'Can not read AHA format .atr file now.\n' );
+% end
+%     
+
 
 
 

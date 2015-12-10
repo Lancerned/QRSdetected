@@ -12,7 +12,7 @@ clear all;close all;clc;
 data_dir=[pwd filesep];
 addpath(pwd)
 
-recordName = [ data_dir '201' ];
+recordName = [ data_dir '104' ];
 [ Signal, Fs, Siginfo, Atrinfo ]=rddat(recordName);
 fprintf( 'Rddat finished.\n');
 
@@ -20,37 +20,37 @@ Signal = BPFilter( Signal );
 Signal = WaveTransform( Signal );
 %[SampleCnt LeadCnt] = size( Signal );
 % Rpeak = ModifiedII( Signal, Fs );
-% QRSdetected( Signal, Fs );
-Feature = KmeansDetected( Signal, Fs );
+Rpeak = QRSdetected( Signal, Fs );
+% Feature = KmeansDetected( Signal, Fs );
 fprintf( 'QRSdetected finished.\n' ); 
 % TWavindex = TWavdetection( Rpeak, Signal, Fs );
 % fprintf( 'TWavdetection finished.\n' );
 % PWavindex = PWavdetection( Rpeak, Signal, Fs );
 % fprintf( 'PWavdetection finished.\n' );
-%% PLOT R-PEAK 
+% %% PLOT R-PEAK 
 plot( Signal( :,1 ) );
 hold on
-r = Feature(1).Rpeak;
+% r = Feature(1).Rpeak;
+r = Rpeak( find(Rpeak(:,1)),1 );
 for i = 1:length(r)
     plot( r(i),Signal(r(i),1), 'ro' );
     hold on;
 end
 
 % %% PLOT TWav 
-% Twav = find( TWavindex(:,1) < 20000 );
-% Twav = TWavindex(Twav,1);
+% Twav = Feature(1).Tpeak;
 % for i = 1:length(Twav)
 %     plot( Twav(i),Signal(Twav(i),1), 'ro' );
 %     hold on;
 % end
 
 %% PlOT ATR
-% atr = find( Atrinfo.Time < 600000 );
-% ar = Atrinfo.Time( atr );
-% for i = 1:length(ar)
-%     plot( ar(i),Signal(ar(i),1), 'ko' );
-%     hold on;
-% end
+atr = find( Atrinfo.Time );
+ar = Atrinfo.Time( atr );
+for i = 1:length(ar)
+    plot( ar(i),Signal(ar(i),1), 'ko' );
+    hold on;
+end
 
 % Methods = {'ModifiedII' 'QRSdetected'};
 % MethodCnt = length( Methods );
