@@ -58,10 +58,11 @@ for j = 1:Recordcnt
                         last5interval_average = sum( last5interval ) / 5;
                     end
                     Rpeakcnt = Rpeakcnt + 1;
-                else
-                    Tminus = real_loc;
+                    i = ceil( Tminus + Fs * 0.2 );
+
+%                 else
+%                     Tminus = real_loc;
                 end
-                i = ceil( Tminus + Fs * 0.2 );
             elseif( Rpeakcnt > 1 & ( i - Tminus > 1.6 * last5interval_average ) )
                 secondary_threshold = threshAverage * 0.3;
                 iter = RpeakIndex( Rpeakcnt - 1,j );
