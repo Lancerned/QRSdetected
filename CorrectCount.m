@@ -14,7 +14,7 @@ FP = 0;
 
 RpeakDetectedFunc = str2func( Method );
 DetectedRpeak = RpeakDetectedFunc( Signal, Fs );
-AtrRpeak = Atrinfo.Time( find( Atrinfo.Type > 0 & Atrinfo.Type < 14 ) );
+AtrRpeak = Atrinfo.Time( find( ( Atrinfo.Type > 0 & Atrinfo.Type < 14 ) | Atrinfo.Type == 31 | Atrinfo.Type == 38 ) );
 
 DetectedRpeakCnt = length( DetectedRpeak );
 AtrRpeakCnt = length( AtrRpeak );
@@ -23,7 +23,7 @@ DetectedRpeakIter = 1;
 AtrRpeakIter = 1;
 
 
-while( DetectedRpeakIter <= DetectedRpeakCnt & AtrRpeakIter < AtrRpeakCnt )
+while( DetectedRpeakIter <= DetectedRpeakCnt & AtrRpeakIter < AtrRpeakCnt  )
     if( abs( DetectedRpeak( DetectedRpeakIter ) - AtrRpeak( AtrRpeakIter ) ) < 0.15 *  Fs ) 
         TP = TP + 1;
         DetectedRpeakIter = DetectedRpeakIter + 1;

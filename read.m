@@ -14,6 +14,9 @@ addpath(pwd)
 
 recordName = [ data_dir '104' ];
 [ Signal, Fs, Siginfo, Atrinfo ]=rddat(recordName);
+
+atr = Atrinfo.Time( find( ( Atrinfo.Type > 0 & Atrinfo.Type < 14 ) | Atrinfo.Type == 31 | Atrinfo.Type == 38 ) );
+% text( x, y, str );
 fprintf( 'Rddat finished.\n');
 
 Signal = BPFilter( Signal );
@@ -23,19 +26,49 @@ Signal = WaveTransform( Signal );
 Rpeak = QRSdetected( Signal, Fs );
 % Feature = KmeansDetected( Signal, Fs );
 fprintf( 'QRSdetected finished.\n' ); 
+
+
+Rpeak = Rpeak( find(Rpeak) );
+DetectedRpeakIter = 1;
+AtrRpeakIter = 1;
+DetectedRpeakCnt = length( Rpeak(:,1) );
+AtrRpeakCnt = length( atr );
+plot( Signal( :,1 ) );
+hold on
+while( DetectedRpeakIter <= DetectedRpeakCnt & AtrRpeakIter < AtrRpeakCnt  )
+    if( abs( Rpeak( DetectedRpeakIter ) - atr( AtrRpeakIter ) ) < 0.15 *  Fs ) 
+%         text( Rpeak( DetectedRpeakIter ), Signal( Rpeak(DetectedRpeakIter),1 ), 'TP' );
+%         hold on;
+%         TP = TP + 1;
+        DetectedRpeakIter = DetectedRpeakIter + 1;
+        AtrRpeakIter = AtrRpeakIter + 1;
+    elseif( Rpeak( DetectedRpeakIter ) < atr( AtrRpeakIter ) )
+        text( Rpeak( DetectedRpeakIter ), Signal( Rpeak(DetectedRpeakIter),1 ), 'FP' );
+        hold on;
+%         FP = FP + 1;
+        DetectedRpeakIter = DetectedRpeakIter + 1;
+    else
+        text( atr( AtrRpeakIter ), Signal( atr(AtrRpeakIter),1 ), 'FN' );
+%         FN = FN + 1;
+        AtrRpeakIter = AtrRpeakIter + 1;
+    end
+end
+
+
+
 % TWavindex = TWavdetection( Rpeak, Signal, Fs );
 % fprintf( 'TWavdetection finished.\n' );
 % PWavindex = PWavdetection( Rpeak, Signal, Fs );
 % fprintf( 'PWavdetection finished.\n' );
 % %% PLOT R-PEAK 
-plot( Signal( :,1 ) );
-hold on
-% r = Feature(1).Rpeak;
-r = Rpeak( find(Rpeak(:,1)),1 );
-for i = 1:length(r)
-    plot( r(i),Signal(r(i),1), 'ro' );
-    hold on;
-end
+% plot( Signal( :,1 ) );
+% hold on
+% % r = Feature(1).Rpeak;
+% r = Rpeak( find(Rpeak(:,1)),1 );
+% for i = 1:length(r)
+%     plot( r(i),Signal(r(i),1), 'ro' );
+%     hold on;
+% end
 
 % %% PLOT TWav 
 % Twav = Feature(1).Tpeak;
@@ -45,12 +78,10 @@ end
 % end
 
 %% PlOT ATR
-atr = find( Atrinfo.Time );
-ar = Atrinfo.Time( atr );
-for i = 1:length(ar)
-    plot( ar(i),Signal(ar(i),1), 'ko' );
-    hold on;
-end
+% for i = 1:length(atr)
+%     plot( atr(i),Signal(atr(i),1), 'ko' );
+%     hold on;
+% end
 
 % Methods = {'ModifiedII' 'QRSdetected'};
 % MethodCnt = length( Methods );
