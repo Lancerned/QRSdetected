@@ -24,7 +24,7 @@ for j = 1:Recordcnt
 
     % Modified thresArray initial method.
     for i = 1:7
-        init_segment = tECGs( (2*i - 1)*Fs:(2*i + 1 )*Fs, 1 );
+        init_segment = tECGs( (2*i - 1)*Fs:(2*i + 1 )*Fs, j );
         initMax = max( init_segment );
         threshArray(i) = initMax;
     end
@@ -44,7 +44,7 @@ for j = 1:Recordcnt
                 real_loc = i - 0.5*idxWindow + QRSloc - 1;
                 if( real_loc - Tminus > ( 0.2 * Fs ) )
                     RpeakIndex( Rpeakcnt,j ) = real_loc;
-                    Tminus = i;
+                    Tminus = real_loc;
     %                 RpeakIndex( Rpeakcnt,j ) = i - 0.5*idxWindow + QRSloc - 1;
     %                 Tminus = i;
     %                 threshArray(1) = [];

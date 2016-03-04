@@ -1,4 +1,4 @@
-function [ RpeakIndex ] = QRSdetected( ECGs, Fs )
+function [ RpeakIndex ] = Paradetected( ECGs, Fs, Vector )
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Title: QRS Detected Algorithm From The Python
 %Programmer:    Pan Jiabin
@@ -8,7 +8,10 @@ function [ RpeakIndex ] = QRSdetected( ECGs, Fs )
 %Last Changed:      12/09/2015
 %Changed By:        Pan Jiabin
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+if nargin < 3
+    Vector = [ 0.8302 0.0168 0.2641 0.1419 0.0330 0.2893 0.8939 ];
+end
+total = sum(Vector);
 [ Samplecnt, Recordcnt ] = size( ECGs );
 idxWindow = ceil( Fs*0.1);
 tECGs = FPDiff( ECGs );
@@ -28,7 +31,7 @@ for j = 1:Recordcnt
         initMax = max( init_segment );
         threshArray(i) = initMax;
     end
-    threshAverage = threshFrac * ( sum(threshArray) - min(threshArray) - max(threshArray) ) / 5;
+    threshAverage = threshFrac * ( Vector * threshArray ) / total;
     % Modified secondary threshold.
     last5interval = zeros( 5, 1 );
     last5interval(:) = 0.75 * Fs;
@@ -51,15 +54,17 @@ for j = 1:Recordcnt
     %                 threshArray(end+1) = max( tECGs( (i-0.5*idxWindow):(i+0.5*idxWindow), j) );
                     threshArray(1:end-1) = threshArray( 2:end );
                     threshArray( end ) = max( tECGs( (i - 0.5*idxWindow ):( i + 0.5*idxWindow ), j ) );
-                    threshAverage = threshFrac * ( sum(threshArray) - min(threshArray) - max(threshArray) ) / 5;
+                    threshAverage = threshFrac * ( Vector * threshArray ) / total;
                     if( Rpeakcnt > 1)
                         last5interval( 1:4 ) = last5interval( 2:5 );
                         last5interval( end ) = max( 0.2 * Fs, RpeakIndex( Rpeakcnt,j ) - RpeakIndex( Rpeakcnt - 1,j ) );
                         last5interval_average = sum( last5interval ) / 5;
                     end
                     Rpeakcnt = Rpeakcnt + 1;
-                else
-                    Tminus = real_loc;
+                    i = ceil( Tminus + Fs * 0.2 );
+
+%                 else
+%                     Tminus = real_loc;
                 end
             elseif( Rpeakcnt > 1 & ( i - Tminus > 1.6 * last5interval_average ) )
                 secondary_threshold = threshAverage * 0.3;
@@ -73,13 +78,16 @@ for j = 1:Recordcnt
                             Tminus = iter;
                             threshArray(1:end-1) = threshArray( 2:end );
                             threshArray( end ) = max( tECGs( (iter - 0.5*idxWindow ):( iter + 0.5*idxWindow ), j ) );
-                            threshAverage = threshFrac * ( sum(threshArray) - min(threshArray) - max(threshArray) ) / 5;
+                            threshAverage = threshFrac * ( Vector * threshArray ) / total;
                             if( Rpeakcnt > 1)
                                 last5interval( 1:4 ) = last5interval( 2:5 );
                                 last5interval( end ) = RpeakIndex( Rpeakcnt,j ) - RpeakIndex( Rpeakcnt - 1,j );
                                 last5interval_average = sum( last5interval ) / 5;
                             end
                             Rpeakcnt = Rpeakcnt + 1;
+                            
+                            Tminus = real_loc;
+                            i = ceil( Tminus + 0.2 * Fs );
                             break;
                         else
 %                             Tminus = real_loc;
@@ -97,6 +105,7 @@ for j = 1:Recordcnt
 %                             last5interval_average = sum( last5interval ) / 5;
 %                         end
 %                         Rpeakcnt = Rpeakcnt + 1;
+                        
                     end
                     iter = iter + 1;
                 end

@@ -12,7 +12,7 @@ clear all;close all;clc;
 data_dir=[pwd filesep];
 addpath(pwd)
 
-recordName = [ data_dir '108' ];
+recordName = [ data_dir '104' ];
 [ Signal, Fs, Siginfo, Atrinfo ]=rddat(recordName);
 
 atr = Atrinfo.Time( find( ( Atrinfo.Type > 0 & Atrinfo.Type < 14 ) | Atrinfo.Type == 31 | Atrinfo.Type == 38 ) );
@@ -21,14 +21,24 @@ fprintf( 'Rddat finished.\n');
 
 Signal = BPFilter( Signal );
 Signal = WaveTransform( Signal );
+plot( Signal(:,1), 'r' );
+hold on;
+tECGs = FPDiff( Signal );
+tECGs = tECGs .* tECGs;
+% tECGs = abs( tECGs );
+tECGs = mwintegration( tECGs, 0.2*Fs );
 %[SampleCnt LeadCnt] = size( Signal );
 % Rpeak = ModifiedII( Signal, Fs );
-Rpeak = QRSdetected( Signal, Fs );
+Rpeak = KNNdetected( Signal, Fs );
+% Rpeak = KmeansRpeak( Signal, Fs );
+Signal = tECGs;
 % Feature = KmeansDetected( Signal, Fs );
+% Vector = [ 1 1 1 1 1 1 1 ];
+% Rpeak = KNNdetected( Signal, Fs, Vector );
 fprintf( 'QRSdetected finished.\n' ); 
 
 
-Rpeak = Rpeak( find(Rpeak) );
+Rpeak = Rpeak( find(Rpeak(:,1)) );
 DetectedRpeakIter = 1;
 AtrRpeakIter = 1;
 DetectedRpeakCnt = length( Rpeak(:,1) );
@@ -56,6 +66,9 @@ while( DetectedRpeakIter <= DetectedRpeakCnt & AtrRpeakIter < AtrRpeakCnt  )
         AtrRpeakIter = AtrRpeakIter + 1;
     end
 end
+
+
+		
 fprintf( 'TP = %d\n', TP );
 fprintf( 'FP = %d\n', FP );
 fprintf( 'FN = %d\n', FN );

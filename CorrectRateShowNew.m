@@ -15,6 +15,7 @@ clc;
 % Methods = { 'KNNdetected'; 'ModifiedII';'KmeansRpeak';'QRSdetected' };
 
 Methods = { 'KNNdetected' };
+% Records = { '108' };
 Records = { '100'; '101'; '102'; '103'; '104'; '105'; '106'; '107'; '108'; '109'; '111'; ...
             '112'; '113'; '114'; '115'; '116'; '117'; '118'; '119'; '121'; '122'; '123';...
             '124'; '200'; '201'; '202'; '203'; '205'; '207'; '208'; '209'; '210'; ...
@@ -41,55 +42,60 @@ bpcnt = 1;
 for RecordIter = 1:RecordCnt
 	str = cell2mat( Records( RecordIter) );
 	[ Signal, Fs, Siginfo, Atrinfo ]=rddat( str );
+    Filtered = BPFilter( Signal );
+    Filtered = WaveTransform( Filtered );
+    AtrRpeak = Atrinfo.Time( find( ( Atrinfo.Type > 0 & Atrinfo.Type < 14 ) ...
+        | Atrinfo.Type == 31 | Atrinfo.Type == 38 ) );
+    AtrRpeakCnt = length( AtrRpeak );
+
 	fprintf( '===========================================================\n' );
 	fprintf( 'Now we calculate the %s record\n', str );
     %LeadCnt = size( Signal, 2 );
-    for LeadIter = 1:LeadCnt
-        fprintf( 'With the Lead %d:\n', LeadIter );
-        MethodIter = 1;
-        for MethodIter = 1:MethodCnt
+% for LeadIter = 1:LeadCnt
+%     fprintf( 'With the Lead %d:\n', LeadIter );
+%     MethodIter = 1;
+    for MethodIter = 1:MethodCnt
+
+        str = cell2mat( Methods( MethodIter ) );
+        fprintf( 'With the Methods: %s\n', str );
+        RpeakDetectedFunc = str2func( str );
+        DetectedRpeak = RpeakDetectedFunc( Filtered, Fs );
+        
+        for LeadIter = 1:LeadCnt
+            fprintf( 'With the Lead %d:\n', LeadIter );
+            Rpeak = DetectedRpeak(:,LeadIter);
+            Rpeak = Rpeak(find(Rpeak));
+            RpeakCnt = length( Rpeak );
+            
             TP = 0;
             FN = 0;
             FP = 0;
-            str = cell2mat( Methods( MethodIter ) );
-            fprintf( 'With the Methods: %s\n', str );
-            RpeakDetectedFunc = str2func( str );
-            Filtered = BPFilter( Signal( :,LeadIter ) );
-            Filtered = WaveTransform( Filtered );
-%             DetectedRpeak = RpeakDetectedFunc( Signal( :,LeadIter ), Fs );
-            DetectedRpeak = RpeakDetectedFunc( Filtered, Fs );
-            DetectedRpeak = DetectedRpeak( find(DetectedRpeak(:,1)) );
-            AtrRpeak = Atrinfo.Time( find( ( Atrinfo.Type > 0 & Atrinfo.Type < 14 ) ...
-                | Atrinfo.Type == 31 | Atrinfo.Type == 38 ) );
-		
-            DetectedRpeakCnt = length( DetectedRpeak );
-            AtrRpeakCnt = length( AtrRpeak );
 
-            DetectedRpeakIter = 1;
+            RpeakIter = 1;
             AtrRpeakIter = 1;
 
-            while( DetectedRpeakIter <= DetectedRpeakCnt & AtrRpeakIter < AtrRpeakCnt )
-                if( abs( DetectedRpeak( DetectedRpeakIter ) - AtrRpeak( AtrRpeakIter ) ) < 0.15 *  Fs ) 
-                	TP = TP + 1;
-                	DetectedRpeakIter = DetectedRpeakIter + 1;
-                	AtrRpeakIter = AtrRpeakIter + 1;
-                elseif( DetectedRpeak( DetectedRpeakIter ) < AtrRpeak( AtrRpeakIter ) )
+            while( RpeakIter <= RpeakCnt & AtrRpeakIter < AtrRpeakCnt )
+                if( abs( Rpeak( RpeakIter ) - AtrRpeak( AtrRpeakIter ) ) < 0.15 *  Fs ) 
+                    TP = TP + 1;
+                    RpeakIter = RpeakIter + 1;
+                    AtrRpeakIter = AtrRpeakIter + 1;
+                elseif( Rpeak( RpeakIter ) < AtrRpeak( AtrRpeakIter ) )
                     FP = FP + 1;
-                    DetectedRpeakIter = DetectedRpeakIter + 1;
+                    RpeakIter = RpeakIter + 1;
                 else
-                	FN = FN + 1;
-                	AtrRpeakIter = AtrRpeakIter + 1;
+                    FN = FN + 1;
+                    AtrRpeakIter = AtrRpeakIter + 1;
                 end
             end
-            while( DetectedRpeakIter <= DetectedRpeakCnt )
-              	FP = FP + 1;
-            	DetectedRpeakIter = DetectedRpeakIter + 1;
+            while( RpeakIter <= RpeakCnt )
+                FP = FP + 1;
+                RpeakIter = RpeakIter + 1;
             end
             while( AtrRpeakIter <= AtrRpeakCnt )
-            	FN = FN + 1;
-            	AtrRpeakIter = AtrRpeakIter + 1;
+                FN = FN + 1;
+                AtrRpeakIter = AtrRpeakIter + 1;
             end
-		
+
 %             TPTotal = TPTotal + TP;
 %             FPTotal = FPTotal + FP;
 %             FNTotal = FNTotal + FN;
@@ -98,9 +104,9 @@ for RecordIter = 1:RecordCnt
             fprintf( 'TP:           %d\n', TP );
             fprintf( 'FP:           %d\n', FP );
             fprintf( 'FN:           %d\n', FN );
-        	fprintf( 'Sensitive:    %f\n', Sensitive );
-        	fprintf( 'Precision:    %f\n', Precision );
-            
+            fprintf( 'Sensitive:    %f\n', Sensitive );
+            fprintf( 'Precision:    %f\n', Precision );
+
             % count the bad performance record.
             if( LeadIter == 1 & ( Sensitive < 0.99 || Precision < 0.99 ) )
                 bprecord( bpcnt ).file = { cell2mat( Records( RecordIter) ) };
@@ -111,17 +117,12 @@ for RecordIter = 1:RecordCnt
                 bprecord( bpcnt ).Precision = Precision;
                 bpcnt = bpcnt + 1;
             end
-%             Total(LeadIter).TP = Total(LeadIter).TP + TP;
-%             Total(LeadIter).FP = Total(LeadIter).FP + FP;
-%             Total(LeadIter).FN = Total(LeadIter).FN + FN;
+            Total(LeadIter).TP = Total(LeadIter).TP + TP;
+            Total(LeadIter).FP = Total(LeadIter).FP + FP;
+            Total(LeadIter).FN = Total(LeadIter).FN + FN;
         end
-        Total(LeadIter).TP = Total(LeadIter).TP + TP;
-        Total(LeadIter).FP = Total(LeadIter).FP + FP;
-        Total(LeadIter).FN = Total(LeadIter).FN + FN;
-        fprintf( '-------------------------------------------\n' );
     end
 end
-
 % fprintf( '\nThe whole Detected performance:\n' );
 
 % Sensitive = TPTotal / ( TPTotal + FNTotal );
