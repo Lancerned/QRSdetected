@@ -1,7 +1,7 @@
 
 function iECGs = mwintegration( ECGs, idxWindow )
 if nargin < 2
-    idxWindow = 60
+    idxWindow = 60;
 end
 
 iECGs = ECGs;

@@ -1,15 +1,22 @@
-function [ bestvector, bestcost ] = PSOptimize( Signal, Fs, atr, domain )
+function [ bestvector, bestcost ] = PSOptimize( Record, Method, domain )
 %UNTITLED5 Summary of this function goes here
 %   Detailed explanation goes here
-stablecnt = 20;
-totalcnt = 100;
+stablecnt = 10;
+totalcnt = 30;
 particnt = 50;
 
 [ paracnt, ~ ] = size( domain );
 particles = zeros( particnt, paracnt );
+% Set five reasonable initial particles.
+particles( 1,: ) = [ 0.4650, 0.7813, 4.2711, 6.6101, 9.8262 ];
+particles( 2,: ) = [ 0.6919, 0.6025, 1.6657, 8.8079, 10 ];
+particles( 3,: ) = [ 0.6919, 0.6025, 1.6657, 8.8079, 12 ];
+particles( 4,: ) = [ 0.6919, 0.6025, 3.6657, 8.8079, 10 ];
+particles( 5,: ) = [ 0.8919, 0.4025, 1.6657, 8.8079, 8 ];
+
 for iter = 1:paracnt    
-    tempvec = domain(iter,1) + rand( particnt, 1 ) * ( domain(iter,2) - domain(iter,1) );
-    particles(:,iter) = tempvec;
+    tempvec = domain(iter,1) + rand( particnt - 5, 1 ) * ( domain(iter,2) - domain(iter,1) );
+    particles(6:end,iter) = tempvec;
     velocities = 0.05 * ones( particnt, paracnt );
 end
 
@@ -27,11 +34,12 @@ gbestcost = 0;
 for iter = 1:particnt
     fprintf( 'Initial particles:%d\n',iter );
     vector = particles( iter,: );
-    Rpeak = KNNdetected( Signal, Fs, vector );
-    pbestcost( iter ) = costf( Rpeak, Fs, atr );
+    pbestcost( iter ) = costf( Record, Method, vector );
     if pbestcost(iter) > gbestcost
         gbestcost = pbestcost(iter);
         gbest = vector;
+        fprintf( 'Initial bestcost = %d\n', gbestcost );
+        vector
     end
 end
 
@@ -59,8 +67,7 @@ for iter = 1:totalcnt
        
         %% Update the gbest and pbest
         vector = particles(jter,:);
-        Rpeak = KNNdetected( Signal, Fs, vector );
-        cost = costf( Rpeak, Fs, atr );
+        cost = costf( Record, Method, vector );
         fprintf( 'cost = %d\n', cost );
         if cost > pbestcost(jter)
             pbestcost(jter) = cost;
@@ -74,6 +81,10 @@ for iter = 1:totalcnt
             end
         end
     end
+    
+    fprintf( 'For this paticles update loop, the best cost is %d.\n', gbestcost );
+    gbest
+    fprintf( 'A paticles update loop finished.\n' );
     
     if stableiter > stablecnt
         break;

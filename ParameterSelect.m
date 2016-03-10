@@ -9,26 +9,33 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 clear all;close all;clc;
-data_dir=[pwd filesep];
-addpath(pwd)
 
-recordName = [ data_dir '104' ];
-[ Signal, Fs, Siginfo, Atrinfo ]=rddat(recordName);
+Method  = 'KNNdetected';
+% Records = { '100'; '101'; '102'; '103'; '104'; '105'; '106'; '107'; '108'; '109'; '111'; ...
+%             '112'; '113'; '114'; '115'; '116'; '117'; '118'; '119'; '121'; '122'; '123';...
+%             '124'; '200'; '201'; '202'; '203'; '205'; '207'; '208'; '209'; '210'; ...
+%             '212'; '213'; '214'; '215'; '217'; '219'; '220'; '221'; '222'; '223'; '228';...
+%             '230'; '231'; '232'; '233'; '234' };
 
-atr = Atrinfo.Time( find( ( Atrinfo.Type > 0 & Atrinfo.Type < 14 ) | Atrinfo.Type == 31 | Atrinfo.Type == 38 ) );
-% text( x, y, str );
-fprintf( 'Rddat finished.\n');
+Records = { '100'; '101'; '102'; '103'; '104'; '105'; '106'; '107'; '109'; '111'; ...
+            '112'; '113'; '114'; '115'; '116'; '117'; '118'; '119'; '121'; '122'; '123';...
+            '124'; '200'; '201'; '202'; '203'; '205'; '207'; '208'; '209'; '210'; ...
+            '212'; '213'; '214'; '215'; '217'; '219'; '220'; '221'; '222'; '223'; '228';...
+            '230'; '231'; '232'; '233'; '234' };
 
-Signal = BPFilter( Signal );
-Signal = WaveTransform( Signal );
-fprintf( 'Preprocess finished.\n' );
+
+
+
+
+
+
 
 fprintf( 'Start optimizaiton.\n' );
 
 % [ vector, BestCost ]  = randomoptimize( Signal(:,1), Fs, atr );
-domain = [ 0.2 1; 0.2 0.8; 0.2 10; 0.2 10; 1 10 ];
+domain = [ 0.2 1; 0.2 0.8; 0.2 10; 0.2 10; 1 15 ];
             
-[ vector, BestCost ]  = PSOptimize( Signal(:,1), Fs, atr, domain );
+[ vector, BestCost ]  = PSOptimize( Records, Method, domain );
 
 vector
 BestCost
